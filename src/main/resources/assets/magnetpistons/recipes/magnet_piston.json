@@ -1,0 +1,19 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"group": "magnetpistons:magnet_piston",
+	"pattern": [
+		"M",
+		"P"
+	],
+	"key": {
+		"P": {
+			"item": "minecraft:piston"
+		},
+		"M": {
+			"item": "magnetpistons:magnet"
+		}
+	},
+	"result": {
+		"item": "magnetpistons:magnet_piston1"
+	}
+}

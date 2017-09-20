@@ -1,0 +1,23 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"group": "magnetpistons:magnet",
+	"pattern": [
+		" R ", 
+		"ISI", 
+		" R "
+	],
+	"key": {
+		"R": {
+			"item": "minecraft:redstone"
+		},
+		"I": {
+			"item": "minecraft:iron_ingot"
+		},
+		"S": {
+			"item": "minecraft:slime_ball"
+		}
+	},
+	"result": {
+		"item": "magnetpistons:magnet"
+	}
+}
