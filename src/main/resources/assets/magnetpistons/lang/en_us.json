@@ -1,0 +1,7 @@
+{
+    "block.magnetpistons.magnet_piston1" : "Magnet Piston",
+    "block.magnetpistons.magnet_piston2" : "Magnet Piston",
+    "block.magnetpistons.magnet_piston3" : "Magnet Piston",
+    "block.magnetpistons.magnet_piston4" : "Magnet Piston",
+    "item.magnetpistons.magnet" : "Magnet"
+}

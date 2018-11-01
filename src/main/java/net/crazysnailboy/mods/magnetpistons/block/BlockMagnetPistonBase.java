@@ -1,61 +1,54 @@
 package net.crazysnailboy.mods.magnetpistons.block;
 
-import java.util.List;
-import java.util.Random;
 import com.google.common.collect.Lists;
 import net.crazysnailboy.mods.magnetpistons.block.state.BlockMagnetPistonStructureHelper;
 import net.crazysnailboy.mods.magnetpistons.init.ModBlocks;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockPistonExtension.EnumPistonType;
 import net.minecraft.block.BlockSnow;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.EnumPushReaction;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.IntegerProperty;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.PistonType;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.IItemProvider;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
+import java.util.List;
 
-public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase
-{
 
-	public static final PropertyInteger STRENGTH = PropertyInteger.create("strength", 1, 4);
+public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase {
+	public static final IntegerProperty STRENGTH = IntegerProperty.create("strength", 1, 4);
 	private final boolean isSticky;
 	private int strength;
 
 
-	public BlockMagnetPistonBase(int strength)
-	{
-		super(false);
+	public BlockMagnetPistonBase(int strength) {
+		super(false, Builder.create(Material.PISTON).sound(SoundType.STONE).hardnessAndResistance(0.5f, 0.5f));
 		this.isSticky = false;
 		this.strength = strength;
-		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(EXTENDED, false).withProperty(STRENGTH, this.strength));
-		this.setSoundType(SoundType.STONE);
-		this.setHardness(0.5F);
-		this.setCreativeTab(this.strength == 1 ? CreativeTabs.REDSTONE : null);
+		this.setDefaultState(this.getDefaultState().withProperty(FACING, EnumFacing.NORTH).withProperty(EXTENDED, false).withProperty(STRENGTH, this.strength));
+		//this.setCreativeTab(this.strength == 1 ? CreativeTabs.REDSTONE : null);
 	}
 
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack)
-	{
-		world.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)), 2);
-		if (!world.isRemote)
-		{
+	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+		//world.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)), 2);
+		if (!world.isRemote) {
 			this.checkForMove(world, pos, state);
 		}
 	}
@@ -70,22 +63,18 @@ public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase
 	}
 
 	@Override
-	public void onBlockAdded(World world, BlockPos pos, IBlockState state)
-	{
-		if (!world.isRemote && world.getTileEntity(pos) == null)
-		{
+	public void onBlockAdded(IBlockState state, World world, BlockPos pos, IBlockState state1) {
+		if (!world.isRemote && world.getTileEntity(pos) == null) {
 			this.checkForMove(world, pos, state);
 		}
 	}
 
 	@Override
-	public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer)
-	{
-		return this.getDefaultState().withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)).withProperty(EXTENDED, false).withProperty(STRENGTH, 1);
+	public IBlockState getStateForPlacement(BlockItemUseContext context) {
+		return this.getDefaultState().withProperty(FACING, context.func_196010_d()).withProperty(EXTENDED, false).withProperty(STRENGTH, 1);
 	}
 
-	private void checkForMove(World world, BlockPos pos, IBlockState state)
-	{
+	private void checkForMove(World world, BlockPos pos, IBlockState state) {
 		EnumFacing facing = state.getValue(FACING);
 		boolean shouldBeExtended = this.shouldBeExtended(world, pos, facing);
 
@@ -130,68 +119,56 @@ public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase
 	}
 
 	@Override
-	public boolean eventReceived(IBlockState state, World worldIn, BlockPos pos, int id, int param)
-	{
+	public boolean eventReceived(IBlockState state, World worldIn, BlockPos pos, int id, int param) {
 		EnumFacing enumfacing = state.getValue(FACING);
 
-		if (!worldIn.isRemote)
-		{
+		if (!worldIn.isRemote) {
 			boolean shouldBeExtended = this.shouldBeExtended(worldIn, pos, enumfacing);
-			if (shouldBeExtended && id == 1)
-			{
+			if (shouldBeExtended && id == 1) {
 				worldIn.setBlockState(pos, state.withProperty(EXTENDED, true), 2);
 				return false;
 			}
-			if (!shouldBeExtended && id == 0)
-			{
+
+			if (!shouldBeExtended && id == 0) {
 				return false;
 			}
 		}
 
-		if (id == 0)
-		{
-			if (!this.doMove(worldIn, pos, enumfacing, true))
-			{
+		if (id == 0) {
+			if (!this.doMove(worldIn, pos, enumfacing, true)) {
 				return false;
 			}
 
-			worldIn.setBlockState(pos, state.withProperty(EXTENDED, Boolean.valueOf(true)), 3);
-			worldIn.playSound((EntityPlayer)null, pos, SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 0.5F, worldIn.rand.nextFloat() * 0.25F + 0.6F);
-		}
-		else if (id == 1)
-		{
+			worldIn.setBlockState(pos, state.withProperty(EXTENDED, Boolean.TRUE), 3);
+			worldIn.playSound(null, pos, SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 0.5F, worldIn.rand.nextFloat() * 0.25F + 0.6F);
+		} else if (id == 1) {
 			TileEntity tileentity1 = worldIn.getTileEntity(pos.offset(enumfacing));
-			if (tileentity1 instanceof net.minecraft.tileentity.TileEntityPiston)
-			{
+			if (tileentity1 instanceof net.minecraft.tileentity.TileEntityPiston) {
 				((net.minecraft.tileentity.TileEntityPiston)tileentity1).clearPistonTileEntity();
 			}
 
-			worldIn.setBlockState(pos, ModBlocks.MAGNET_PISTON_EXTENSION.getDefaultState().withProperty(BlockMagnetPistonMoving.FACING, enumfacing).withProperty(BlockMagnetPistonMoving.TYPE, this.isSticky ? EnumPistonType.STICKY : EnumPistonType.DEFAULT), 3);
-			worldIn.setTileEntity(pos, BlockMagnetPistonMoving.createTilePiston(this.getStateFromMeta(param), enumfacing, false, true));
+			worldIn.setBlockState(pos, ModBlocks.MAGNET_PISTON_MOVING.getDefaultState().withProperty(BlockMagnetPistonMoving.FACING, enumfacing).withProperty(BlockMagnetPistonMoving.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT), 3);
+			worldIn.setTileEntity(pos, BlockMagnetPistonMoving.createTilePiston(state, enumfacing, false, true));
 
 //			if (this.isSticky)
 //			{
-			BlockPos blockpos = pos.add(enumfacing.getFrontOffsetX() * 2, enumfacing.getFrontOffsetY() * 2, enumfacing.getFrontOffsetZ() * 2);
+			BlockPos blockpos = pos.add(enumfacing.getDirectionVec());
 			IBlockState iblockstate = worldIn.getBlockState(blockpos);
 			Block block = iblockstate.getBlock();
 			boolean flag1 = false;
 
-			if (block instanceof net.minecraft.block.BlockPistonMoving)
-			{
+			if (block instanceof net.minecraft.block.BlockPistonMoving) {
 				TileEntity tileentity = worldIn.getTileEntity(blockpos);
-				if (tileentity instanceof net.minecraft.tileentity.TileEntityPiston)
-				{
+				if (tileentity instanceof net.minecraft.tileentity.TileEntityPiston) {
 					net.minecraft.tileentity.TileEntityPiston tileentitypiston = (net.minecraft.tileentity.TileEntityPiston)tileentity;
-					if (tileentitypiston.getFacing() == enumfacing && tileentitypiston.isExtending())
-					{
+					if (tileentitypiston.func_195509_h() == enumfacing && tileentitypiston.isExtending()) {
 						tileentitypiston.clearPistonTileEntity();
 						flag1 = true;
 					}
 				}
 			}
 
-			if (!flag1 && !iblockstate.getBlock().isAir(iblockstate, worldIn, blockpos) && canPush(iblockstate, worldIn, blockpos, enumfacing.getOpposite(), false, enumfacing) && (iblockstate.getMobilityFlag() == EnumPushReaction.NORMAL || block instanceof net.minecraft.block.BlockPistonBase))
-			{
+			if (!flag1 && !iblockstate.getBlock().isAir(iblockstate) && canPush(iblockstate, worldIn, blockpos, enumfacing.getOpposite(), false, enumfacing) && (iblockstate.getPushReaction() == EnumPushReaction.NORMAL || block instanceof net.minecraft.block.BlockPistonBase)) {
 				this.doMove(worldIn, pos, enumfacing, false);
 			}
 //			}
@@ -200,38 +177,28 @@ public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase
 //				worldIn.setBlockToAir(pos.offset(enumfacing));
 //			}
 
-			worldIn.playSound((EntityPlayer)null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, worldIn.rand.nextFloat() * 0.15F + 0.6F);
+			worldIn.playSound(null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, worldIn.rand.nextFloat() * 0.15F + 0.6F);
 		}
 
 		return true;
 	}
 
 	@SuppressWarnings("incomplete-switch")
-	public static boolean canPush(IBlockState state, World world, BlockPos pos, EnumFacing facing, boolean destroyBlocks, EnumFacing p_185646_5_)
-	{
+	public static boolean canPush(IBlockState state, World world, BlockPos pos, EnumFacing facing, boolean destroyBlocks, EnumFacing p_185646_5_) {
 		Block block = state.getBlock();
 
-		if (block == Blocks.OBSIDIAN)
-		{
+		if (block == Blocks.OBSIDIAN) {
 			return false;
-		}
-		else if (!world.getWorldBorder().contains(pos))
-		{
+		} else if (!world.getWorldBorder().contains(pos)) {
 			return false;
-		}
-		else if (pos.getY() >= 0 && (facing != EnumFacing.DOWN || pos.getY() != 0))
-		{
-			if (pos.getY() <= world.getHeight() - 1 && (facing != EnumFacing.UP || pos.getY() != world.getHeight() - 1))
-			{
-				if (!(block instanceof net.minecraft.block.BlockPistonBase))
-				{
-					if (state.getBlockHardness(world, pos) == -1.0F)
-					{
+		} else if (pos.getY() >= 0 && (facing != EnumFacing.DOWN || pos.getY() != 0)) {
+			if (pos.getY() <= world.getHeight() - 1 && (facing != EnumFacing.UP || pos.getY() != world.getHeight() - 1)) {
+				if (!(block instanceof net.minecraft.block.BlockPistonBase)) {
+					if (state.getBlockHardness(world, pos) == -1.0F) {
 						return false;
 					}
 
-					switch (state.getMobilityFlag())
-					{
+					switch (state.getPushReaction()) {
 						case BLOCK:
 							return false;
 						case DESTROY:
@@ -239,48 +206,35 @@ public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase
 						case PUSH_ONLY:
 							return facing == p_185646_5_;
 					}
-				}
-				else if (state.getValue(EXTENDED))
-				{
+				} else if (state.getValue(EXTENDED)) {
 					return false;
 				}
 
-				return !block.hasTileEntity(state);
-			}
-			else
-			{
+				return !block.hasTileEntity();
+			} else {
 				return false;
 			}
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}
 
-	private boolean doMove(World world, BlockPos pos, EnumFacing direction, boolean extending)
-	{
-		if (!extending)
-		{
-			world.setBlockToAir(pos.offset(direction));
+	private boolean doMove(World world, BlockPos pos, EnumFacing direction, boolean extending) {
+		if (!extending) {
+			world.removeBlock(pos.offset(direction));
 		}
 
 		BlockMagnetPistonStructureHelper blockpistonstructurehelper = new BlockMagnetPistonStructureHelper(world, pos, direction, extending, this.strength);
 
-		if (!blockpistonstructurehelper.canMove())
-		{
+		if (!blockpistonstructurehelper.canMove()) {
 			return false;
-		}
-		else
-		{
+		} else {
 			List<BlockPos> list = blockpistonstructurehelper.getBlocksToMove();
-			List<IBlockState> list1 = Lists.<IBlockState>newArrayList();
+			List<IBlockState> list1 = Lists.newArrayList();
 
-			for (int i = 0; i < list.size(); ++i)
-			{
-				BlockPos blockpos = list.get(i);
-				list1.add(world.getBlockState(blockpos).getActualState(world, blockpos));
-			}
+            for (BlockPos blockpos : list) {
+                list1.add(world.getBlockState(blockpos));
+            }
 
 			List<BlockPos> list2 = blockpistonstructurehelper.getBlocksToDestroy();
 			int k = list.size() + list2.size();
@@ -293,7 +247,7 @@ public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase
 				IBlockState iblockstate = world.getBlockState(blockpos1);
 				// Forge: With our change to how snowballs are dropped this needs to disallow to mimic vanilla behavior.
 				float chance = iblockstate.getBlock() instanceof BlockSnow ? -1.0f : 1.0f;
-				iblockstate.getBlock().dropBlockAsItemWithChance(world, blockpos1, iblockstate, chance, 0);
+				iblockstate.getBlock().dropBlockAsItemWithChance(iblockstate, world, blockpos1, chance, 0);
 				world.setBlockState(blockpos1, Blocks.AIR.getDefaultState(), 4);
 				--k;
 				aiblockstate[k] = iblockstate;
@@ -305,7 +259,7 @@ public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase
 				IBlockState iblockstate2 = world.getBlockState(blockpos3);
 				world.setBlockState(blockpos3, Blocks.AIR.getDefaultState(), 2);
 				blockpos3 = blockpos3.offset(enumfacing);
-				world.setBlockState(blockpos3, ModBlocks.MAGNET_PISTON_EXTENSION.getDefaultState().withProperty(FACING, direction), 4);
+				world.setBlockState(blockpos3, ModBlocks.MAGNET_PISTON_MOVING.getDefaultState().withProperty(FACING, direction), 4);
 				world.setTileEntity(blockpos3, BlockMagnetPistonMoving.createTilePiston(list1.get(l), direction, extending, false));
 				--k;
 				aiblockstate[k] = iblockstate2;
@@ -315,52 +269,41 @@ public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase
 
 			if (extending)
 			{
-				IBlockState iblockstate3 = ModBlocks.MAGNET_PISTON_HEAD.getDefaultState().withProperty(BlockMagnetPistonExtension.FACING, direction).withProperty(BlockMagnetPistonExtension.TYPE, EnumPistonType.DEFAULT);
-				IBlockState iblockstate1 = ModBlocks.MAGNET_PISTON_EXTENSION.getDefaultState().withProperty(BlockMagnetPistonMoving.FACING, direction).withProperty(BlockMagnetPistonMoving.TYPE, EnumPistonType.DEFAULT);
+				IBlockState iblockstate3 = ModBlocks.MAGNET_PISTON_HEAD.getDefaultState().withProperty(BlockMagnetPistonExtension.FACING, direction).withProperty(BlockMagnetPistonExtension.TYPE, PistonType.DEFAULT);
+				IBlockState iblockstate1 = ModBlocks.MAGNET_PISTON_MOVING.getDefaultState().withProperty(BlockMagnetPistonMoving.FACING, direction).withProperty(BlockMagnetPistonMoving.TYPE, PistonType.DEFAULT);
 				world.setBlockState(blockpos2, iblockstate1, 4);
 				world.setTileEntity(blockpos2, BlockMagnetPistonMoving.createTilePiston(iblockstate3, direction, true, true));
 			}
 
-			for (int i1 = list2.size() - 1; i1 >= 0; --i1)
-			{
-				world.notifyNeighborsOfStateChange(list2.get(i1), aiblockstate[k++].getBlock(), false);
+			for (int i1 = list2.size() - 1; i1 >= 0; --i1) {
+				world.notifyNeighborsOfStateChange(list2.get(i1), aiblockstate[k++].getBlock());
 			}
 
-			for (int j1 = list.size() - 1; j1 >= 0; --j1)
-			{
-				world.notifyNeighborsOfStateChange(list.get(j1), aiblockstate[k++].getBlock(), false);
+			for (int j1 = list.size() - 1; j1 >= 0; --j1) {
+				world.notifyNeighborsOfStateChange(list.get(j1), aiblockstate[k++].getBlock());
 			}
 
-			if (extending)
-			{
-				world.notifyNeighborsOfStateChange(blockpos2, ModBlocks.MAGNET_PISTON_HEAD, false);
+			if (extending) {
+				world.notifyNeighborsOfStateChange(blockpos2, ModBlocks.MAGNET_PISTON_HEAD);
 			}
 
 			return true;
 		}
 	}
 
-	@Override
-	protected BlockStateContainer createBlockState()
-	{
-		return new BlockStateContainer(this, new IProperty[] { FACING, EXTENDED, STRENGTH });
-	}
+    @Override
+    protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> container) {
+        super.fillStateContainer(container);
+        container.add(STRENGTH);
+    }
 
 	@Override
-	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos)
-	{
-		return world.getBlockState(pos).withProperty(STRENGTH, this.strength);
-	}
-
-	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
-	{
-		if (facing != state.getValue(FACING))
-		{
-			int newStrengh = (this.strength == 4 ? 1 : this.strength + 1);
+	public boolean onBlockActivated(IBlockState state, World world, BlockPos pos, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	    if (facing != state.getValue(FACING)) {
+	        int newStrengh = (this.strength == 4 ? 1 : this.strength + 1);
 			IBlockState newState;
-			switch (newStrengh)
-			{
+
+			switch (newStrengh) {
 				case 1:
 					newState = ModBlocks.MAGNET_PISTON1.getDefaultState();
 					break;
@@ -385,15 +328,13 @@ public class BlockMagnetPistonBase extends net.minecraft.block.BlockPistonBase
 	}
 
 	@Override
-	public ItemStack getItem(World worldIn, BlockPos pos, IBlockState state)
-	{
+	public ItemStack getItem(IBlockReader worldIn, BlockPos pos, IBlockState state) {
 		return new ItemStack(ModBlocks.MAGNET_PISTON1);
 	}
 
 	@Override
-	public Item getItemDropped(IBlockState state, Random rand, int fortune)
-	{
-		return Item.getItemFromBlock(ModBlocks.MAGNET_PISTON1);
+	public IItemProvider getItemDropped(IBlockState state, World world, BlockPos pos, int fortune) {
+		return ModBlocks.MAGNET_PISTON1;
 	}
 
 }

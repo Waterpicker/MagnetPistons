@@ -2,51 +2,48 @@ package net.crazysnailboy.mods.magnetpistons.block;
 
 import net.crazysnailboy.mods.magnetpistons.init.ModBlocks;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.properties.PistonType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
 
 public class BlockPistonExtension extends net.minecraft.block.BlockPistonExtension
 {
 
-	public BlockPistonExtension()
-	{
-		super();
-		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(TYPE, EnumPistonType.DEFAULT).withProperty(SHORT, false));
+	public BlockPistonExtension() {
+		super(Builder.create(Material.PISTON).hardnessAndResistance(0.5f, 0.5f));
+		this.setDefaultState(this.getDefaultState().withProperty(FACING, EnumFacing.NORTH).withProperty(TYPE, PistonType.DEFAULT).withProperty(SHORT, false));
 	}
 
-
 	@Override
-	public void onBlockHarvested(World world, BlockPos pos, IBlockState state, EntityPlayer player)
-	{
-		if (player.capabilities.isCreativeMode)
-		{
+	public void onBlockHarvested(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
+		if (player.capabilities.isCreativeMode) {
 			BlockPos blockpos = pos.offset(state.getValue(FACING).getOpposite());
 			Block block = world.getBlockState(blockpos).getBlock();
-			if (block instanceof net.minecraft.block.BlockPistonBase)
-			{
-				world.setBlockToAir(blockpos);
+			if (block instanceof net.minecraft.block.BlockPistonBase) {
+				world.removeBlock(blockpos);
 			}
 		}
 		super.onBlockHarvested(world, pos, state, player);
 	}
 
 	@Override
-	public void breakBlock(World world, BlockPos pos, IBlockState state)
-	{
-		super.breakBlock(world, pos, state);
+	public void onReplaced(IBlockState state, World world, BlockPos pos, IBlockState state1, boolean a) {
+		super.onReplaced(state, world, pos, state1, a);
 		EnumFacing opposite = state.getValue(FACING).getOpposite();
 		pos = pos.offset(opposite);
 		IBlockState iblockstate = world.getBlockState(pos);
 
 		if (iblockstate.getBlock() instanceof net.minecraft.block.BlockPistonBase && iblockstate.getValue(BlockPistonBase.EXTENDED))
 		{
-			iblockstate.getBlock().dropBlockAsItem(world, pos, iblockstate, 0);
-			world.setBlockToAir(pos);
+			iblockstate.dropBlockAsItem(world, pos, 0);
+			world.removeBlock(pos);
 		}
 	}
 
@@ -57,9 +54,8 @@ public class BlockPistonExtension extends net.minecraft.block.BlockPistonExtensi
 		BlockPos blockpos = pos.offset(enumfacing.getOpposite());
 		IBlockState iblockstate = world.getBlockState(blockpos);
 
-		if (!(iblockstate.getBlock() instanceof net.minecraft.block.BlockPistonBase))
-		{
-			world.setBlockToAir(pos);
+		if (!(iblockstate.getBlock() instanceof net.minecraft.block.BlockPistonBase)) {
+			world.removeBlock(pos);
 		}
 		else
 		{
@@ -68,9 +64,8 @@ public class BlockPistonExtension extends net.minecraft.block.BlockPistonExtensi
 	}
 
 	@Override
-	public ItemStack getItem(World world, BlockPos pos, IBlockState state)
-	{
-		return new ItemStack(state.getValue(TYPE) == EnumPistonType.STICKY ? ModBlocks.STICKY_PISTON : ModBlocks.PISTON);
+	public ItemStack getItem(IBlockReader world, BlockPos pos, IBlockState state) {
+		return new ItemStack(state.getValue(TYPE) == PistonType.STICKY ? ModBlocks.STICKY_PISTON : ModBlocks.PISTON);
 	}
 
 }

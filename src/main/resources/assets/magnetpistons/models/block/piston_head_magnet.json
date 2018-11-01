@@ -1,8 +1,8 @@
 {
     "parent": "block/piston_head",
     "textures": {
-        "unsticky": "magnetpistons:blocks/piston_top_magnet",
-        "side": "magnetpistons:blocks/piston_side_magnet",
-        "platform": "magnetpistons:blocks/piston_top_magnet"
+        "unsticky": "magnetpistons:block/piston_top_magnet",
+        "side": "magnetpistons:block/piston_side_magnet",
+        "platform": "magnetpistons:block/piston_top_magnet"
     }
 }

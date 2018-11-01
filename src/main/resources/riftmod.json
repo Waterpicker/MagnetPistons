@@ -1,0 +1,12 @@
+{
+	"id": "magnetpistons",
+	"name": "Magnet Pistons",
+	"authors": [
+		"csb987", "Waterpicker"
+	],
+	"listeners": [
+		"net.crazysnailboy.mods.magnetpistons.init.ModBlocks",
+		"net.crazysnailboy.mods.magnetpistons.init.ModItems",
+		"net.crazysnailboy.mods.magnetpistons.init.ModTileEntities"
+	]
+}

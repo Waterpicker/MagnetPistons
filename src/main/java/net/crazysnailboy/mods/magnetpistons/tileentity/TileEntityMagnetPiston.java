@@ -1,12 +1,8 @@
 package net.crazysnailboy.mods.magnetpistons.tileentity;
 
-import java.util.List;
-import javax.annotation.Nullable;
-import com.google.common.collect.Lists;
 import net.crazysnailboy.mods.magnetpistons.block.BlockMagnetPistonBase;
 import net.crazysnailboy.mods.magnetpistons.block.BlockMagnetPistonExtension;
 import net.crazysnailboy.mods.magnetpistons.init.ModBlocks;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockPistonExtension;
 import net.minecraft.block.material.EnumPushReaction;
 import net.minecraft.block.state.IBlockState;
@@ -14,15 +10,16 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.state.properties.PistonType;
 import net.minecraft.tileentity.TileEntityPiston;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.util.math.shapes.ShapeUtils;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
+
+import java.util.List;
 
 
 public class TileEntityMagnetPiston extends TileEntityPiston
@@ -32,14 +29,7 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 	private EnumFacing pistonFacing;
 	private boolean extending;
 	private boolean shouldHeadBeRendered;
-	private static final ThreadLocal<EnumFacing> MOVING_ENTITY = new ThreadLocal<EnumFacing>()
-	{
-		@Override
-		protected EnumFacing initialValue()
-		{
-			return null;
-		}
-	};
+	private static final ThreadLocal<EnumFacing> MOVING_ENTITY = ThreadLocal.withInitial(() -> null);
 	private float progress;
 	private float lastProgress;
 
@@ -58,21 +48,9 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 	}
 
 	@Override
-	public IBlockState getPistonState()
-	{
-		return this.pistonState;
-	}
-
-	@Override
 	public NBTTagCompound getUpdateTag()
 	{
 		return this.writeToNBT(new NBTTagCompound());
-	}
-
-	@Override
-	public int getBlockMetadata()
-	{
-		return 0;
 	}
 
 	@Override
@@ -82,23 +60,14 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 	}
 
 	@Override
-	public EnumFacing getFacing()
-	{
-		return this.pistonFacing;
-	}
-
-	@Override
 	public boolean shouldPistonHeadBeRendered()
 	{
 		return this.shouldHeadBeRendered;
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public float getProgress(float ticks)
-	{
-		if (ticks > 1.0F)
-		{
+	public float getProgress(float ticks) {
+		if (ticks > 1.0F) {
 			ticks = 1.0F;
 		}
 
@@ -106,24 +75,19 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public float getOffsetX(float ticks)
-	{
-		return (float)this.pistonFacing.getFrontOffsetX() * this.getExtendedProgress(this.getProgress(ticks));
+	public float getOffsetX(float ticks) {
+		return (float)this.pistonFacing.getXOffset() * this.getExtendedProgress(this.getProgress(ticks));
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public float getOffsetY(float ticks)
-	{
-		return (float)this.pistonFacing.getFrontOffsetY() * this.getExtendedProgress(this.getProgress(ticks));
+	public float getOffsetY(float ticks) {
+		return (float)this.pistonFacing.getYOffset() * this.getExtendedProgress(this.getProgress(ticks));
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public float getOffsetZ(float ticks)
 	{
-		return (float)this.pistonFacing.getFrontOffsetZ() * this.getExtendedProgress(this.getProgress(ticks));
+		return (float)this.pistonFacing.getZOffset() * this.getExtendedProgress(this.getProgress(ticks));
 	}
 
 	private float getExtendedProgress(float ticks)
@@ -131,89 +95,63 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 		return this.extending ? ticks - 1.0F : 1.0F - ticks;
 	}
 
-	@Override
-	public AxisAlignedBB getAABB(IBlockAccess world, BlockPos pos)
-	{
-		return this.getAABB(world, pos, this.progress).union(this.getAABB(world, pos, this.lastProgress));
-	}
 
-	@Override
-	public AxisAlignedBB getAABB(IBlockAccess world, BlockPos pos, float progress)
-	{
-		progress = this.getExtendedProgress(progress);
-		IBlockState iblockstate = this.getCollisionRelatedBlockState();
-		return iblockstate.getBoundingBox(world, pos).offset((double)(progress * (float)this.pistonFacing.getFrontOffsetX()), (double)(progress * (float)this.pistonFacing.getFrontOffsetY()), (double)(progress * (float)this.pistonFacing.getFrontOffsetZ()));
-	}
-
-	private IBlockState getCollisionRelatedBlockState()
-	{
-		return !this.isExtending() && this.shouldPistonHeadBeRendered() ? ModBlocks.MAGNET_PISTON_HEAD.getDefaultState().withProperty(BlockPistonExtension.TYPE, BlockPistonExtension.EnumPistonType.DEFAULT).withProperty(BlockPistonExtension.FACING, this.pistonState.getValue(BlockMagnetPistonBase.FACING)) : this.pistonState;
+	private IBlockState getCollisionRelatedBlockState() {
+		return !this.isExtending() && this.shouldPistonHeadBeRendered() ? ModBlocks.MAGNET_PISTON_HEAD.getDefaultState().withProperty(BlockPistonExtension.TYPE, PistonType.DEFAULT).withProperty(BlockPistonExtension.FACING, this.pistonState.getValue(BlockMagnetPistonBase.FACING)) : this.pistonState;
 	}
 
 	private void moveCollidedEntities(float p_184322_1_)
 	{
 		EnumFacing enumfacing = this.extending ? this.pistonFacing : this.pistonFacing.getOpposite();
 		double d0 = (double)(p_184322_1_ - this.progress);
-		List<AxisAlignedBB> list = Lists.<AxisAlignedBB>newArrayList();
-		this.getCollisionRelatedBlockState().addCollisionBoxToList(this.world, BlockPos.ORIGIN, new AxisAlignedBB(BlockPos.ORIGIN), list, (Entity)null, true);
+		VoxelShape shape = this.getCollisionRelatedBlockState().getCollisionShape(this.world, this.getPos());
 
-		if (!list.isEmpty())
-		{
+		if (!shape.isEmpty()) {
+			List<AxisAlignedBB> list = shape.toBoundingBoxList();
 			AxisAlignedBB axisalignedbb = this.moveByPositionAndProgress(this.getMinMaxPiecesAABB(list));
-			List<Entity> list1 = this.world.getEntitiesWithinAABBExcludingEntity((Entity)null, this.getMovementArea(axisalignedbb, enumfacing, d0).union(axisalignedbb));
+			List<Entity> list1 = this.world.getEntitiesWithinAABBExcludingEntity(null, this.getMovementArea(axisalignedbb, enumfacing, d0).union(axisalignedbb));
 
 			if (!list1.isEmpty())
 			{
 				boolean flag = this.pistonState.getBlock() == Blocks.SLIME_BLOCK;
 
-				for (int i = 0; i < list1.size(); ++i)
-				{
-					Entity entity = list1.get(i);
-
-					if (entity.getPushReaction() != EnumPushReaction.IGNORE)
-					{
-						if (flag)
-						{
-							switch (enumfacing.getAxis())
-							{
+				for (Entity entity : list1) {
+					if (entity.getPushReaction() != EnumPushReaction.IGNORE) {
+						if (flag) {
+							switch (enumfacing.getAxis()) {
 								case X:
-									entity.motionX = (double)enumfacing.getFrontOffsetX();
+									entity.motionX = (double) enumfacing.getXOffset();
 									break;
 								case Y:
-									entity.motionY = (double)enumfacing.getFrontOffsetY();
+									entity.motionY = (double) enumfacing.getYOffset();
 									break;
 								case Z:
-									entity.motionZ = (double)enumfacing.getFrontOffsetZ();
+									entity.motionZ = (double) enumfacing.getZOffset();
 							}
 						}
 
 						double d1 = 0.0D;
 
-						for (int j = 0; j < list.size(); ++j)
-						{
-							AxisAlignedBB axisalignedbb1 = this.getMovementArea(this.moveByPositionAndProgress(list.get(j)), enumfacing, d0);
+						for (AxisAlignedBB aList : list) {
+							AxisAlignedBB axisalignedbb1 = this.getMovementArea(this.moveByPositionAndProgress(aList), enumfacing, d0);
 							AxisAlignedBB axisalignedbb2 = entity.getEntityBoundingBox();
 
-							if (axisalignedbb1.intersects(axisalignedbb2))
-							{
+							if (axisalignedbb1.intersects(axisalignedbb2)) {
 								d1 = Math.max(d1, this.getMovement(axisalignedbb1, enumfacing, axisalignedbb2));
 
-								if (d1 >= d0)
-								{
+								if (d1 >= d0) {
 									break;
 								}
 							}
 						}
 
-						if (d1 > 0.0D)
-						{
+						if (d1 > 0.0D) {
 							d1 = Math.min(d1, d0) + 0.01D;
 							MOVING_ENTITY.set(enumfacing);
-							entity.move(MoverType.PISTON, d1 * (double)enumfacing.getFrontOffsetX(), d1 * (double)enumfacing.getFrontOffsetY(), d1 * (double)enumfacing.getFrontOffsetZ());
+							entity.move(MoverType.PISTON, d1 * (double) enumfacing.getXOffset(), d1 * (double) enumfacing.getYOffset(), d1 * (double) enumfacing.getZOffset());
 							MOVING_ENTITY.set(null);
 
-							if (!this.extending && this.shouldHeadBeRendered)
-							{
+							if (!this.extending && this.shouldHeadBeRendered) {
 								this.fixEntityWithinPistonBase(entity, enumfacing, d0);
 							}
 						}
@@ -262,7 +200,7 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 	private AxisAlignedBB moveByPositionAndProgress(AxisAlignedBB p_190607_1_)
 	{
 		double d0 = (double)this.getExtendedProgress(this.progress);
-		return p_190607_1_.offset((double)this.pos.getX() + d0 * (double)this.pistonFacing.getFrontOffsetX(), (double)this.pos.getY() + d0 * (double)this.pistonFacing.getFrontOffsetY(), (double)this.pos.getZ() + d0 * (double)this.pistonFacing.getFrontOffsetZ());
+		return p_190607_1_.offset((double)this.pos.getX() + d0 * (double)this.pistonFacing.getXOffset(), (double)this.pos.getY() + d0 * (double)this.pistonFacing.getYOffset(), (double)this.pos.getZ() + d0 * (double)this.pistonFacing.getZOffset());
 	}
 
 	private AxisAlignedBB getMovementArea(AxisAlignedBB p_190610_1_, EnumFacing p_190610_2_, double p_190610_3_)
@@ -289,13 +227,11 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 		}
 	}
 
-	private void fixEntityWithinPistonBase(Entity entity, EnumFacing facing, double p_190605_3_)
-	{
+	private void fixEntityWithinPistonBase(Entity entity, EnumFacing facing, double p_190605_3_) {
 		AxisAlignedBB axisalignedbb = entity.getEntityBoundingBox();
-		AxisAlignedBB axisalignedbb1 = Block.FULL_BLOCK_AABB.offset(this.pos);
+		AxisAlignedBB axisalignedbb1 = ShapeUtils.fullCube().getBoundingBox().offset(this.pos);
 
-		if (axisalignedbb.intersects(axisalignedbb1))
-		{
+		if (axisalignedbb.intersects(axisalignedbb1)) {
 			EnumFacing enumfacing = facing.getOpposite();
 			double d0 = this.getMovement(axisalignedbb1, enumfacing, axisalignedbb) + 0.01D;
 			double d1 = this.getMovement(axisalignedbb1, enumfacing, axisalignedbb.intersect(axisalignedbb1)) + 0.01D;
@@ -304,7 +240,7 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 			{
 				d0 = Math.min(d0, p_190605_3_) + 0.01D;
 				MOVING_ENTITY.set(facing);
-				entity.move(MoverType.PISTON, d0 * (double)enumfacing.getFrontOffsetX(), d0 * (double)enumfacing.getFrontOffsetY(), d0 * (double)enumfacing.getFrontOffsetZ());
+				entity.move(MoverType.PISTON, d0 * (double)enumfacing.getXOffset(), d0 * (double)enumfacing.getYOffset(), d0 * (double)enumfacing.getZOffset());
 				MOVING_ENTITY.set(null);
 			}
 		}
@@ -337,8 +273,7 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 			this.world.removeTileEntity(this.pos);
 			this.invalidate();
 
-			if (this.world.getBlockState(this.pos).getBlock() == ModBlocks.MAGNET_PISTON_EXTENSION)
-			{
+			if (this.world.getBlockState(this.pos).getBlock() == ModBlocks.MAGNET_PISTON_MOVING) {
 				this.world.setBlockState(this.pos, this.pistonState, 3);
 				this.world.neighborChanged(this.pos, this.pistonState.getBlock(), this.pos);
 			}
@@ -355,7 +290,7 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 			this.world.removeTileEntity(this.pos);
 			this.invalidate();
 
-			if (this.world.getBlockState(this.pos).getBlock() == ModBlocks.MAGNET_PISTON_EXTENSION)
+			if (this.world.getBlockState(this.pos).getBlock() == ModBlocks.MAGNET_PISTON_MOVING)
 			{
 				this.world.setBlockState(this.pos, this.pistonState, 3);
 				this.world.neighborChanged(this.pos, this.pistonState.getBlock(), this.pos);
@@ -374,70 +309,40 @@ public class TileEntityMagnetPiston extends TileEntityPiston
 		}
 	}
 
-	public static void registerFixesPiston(DataFixer fixer)
-	{
-	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound compound)
-	{
-		super.readFromNBT(compound);
-		this.pistonState = Block.getBlockById(compound.getInteger("blockId")).getStateFromMeta(compound.getInteger("blockData"));
-		this.pistonFacing = EnumFacing.getFront(compound.getInteger("facing"));
-		this.progress = compound.getFloat("progress");
-		this.lastProgress = this.progress;
-		this.extending = compound.getBoolean("extending");
-		this.shouldHeadBeRendered = compound.getBoolean("source");
-	}
+	public VoxelShape func_195508_a(IBlockReader world, BlockPos pos) {
+		VoxelShape shape;
 
-	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound compound)
-	{
-		super.writeToNBT(compound);
-		compound.setInteger("blockId", Block.getIdFromBlock(this.pistonState.getBlock()));
-		compound.setInteger("blockData", this.pistonState.getBlock().getMetaFromState(this.pistonState));
-		compound.setInteger("facing", this.pistonFacing.getIndex());
-		compound.setFloat("progress", this.lastProgress);
-		compound.setBoolean("extending", this.extending);
-		compound.setBoolean("source", this.shouldHeadBeRendered);
-		return compound;
-	}
-
-	@Override
-	public void addCollissionAABBs(World world, BlockPos pos, AxisAlignedBB p_190609_3_, List<AxisAlignedBB> p_190609_4_, @Nullable Entity entity)
-	{
-		if (!this.extending && this.shouldHeadBeRendered)
-		{
-			this.pistonState.withProperty(BlockMagnetPistonBase.EXTENDED, Boolean.valueOf(true)).addCollisionBoxToList(world, pos, p_190609_3_, p_190609_4_, entity, false);
+		if (!this.extending && this.shouldHeadBeRendered) {
+			shape = this.pistonState.withProperty(BlockMagnetPistonBase.EXTENDED, Boolean.TRUE).getCollisionShape(world, pos);
+		} else {
+			shape = ShapeUtils.empty();
 		}
 
 		EnumFacing enumfacing = MOVING_ENTITY.get();
 
-		if ((double)this.progress >= 1.0D || enumfacing != (this.extending ? this.pistonFacing : this.pistonFacing.getOpposite()))
-		{
-			int i = p_190609_4_.size();
+		if ((double)this.progress >= 1.0D || enumfacing == this.func_195509_h()) {
+			return shape;
+		} else {
 			IBlockState iblockstate;
 
-			if (this.shouldPistonHeadBeRendered())
-			{
-				iblockstate = ModBlocks.MAGNET_PISTON_HEAD.getDefaultState().withProperty(BlockMagnetPistonExtension.FACING, this.pistonFacing).withProperty(BlockMagnetPistonExtension.SHORT, Boolean.valueOf(this.extending != 1.0F - this.progress < 0.25F));
-			}
-			else
-			{
+			if (this.shouldPistonHeadBeRendered()) {
+				iblockstate = ModBlocks.MAGNET_PISTON_HEAD.getDefaultState().withProperty(BlockMagnetPistonExtension.FACING, this.pistonFacing).withProperty(BlockMagnetPistonExtension.SHORT, this.extending != 1.0F - this.progress < 0.25F);
+			} else {
 				iblockstate = this.pistonState;
 			}
 
 			float f = this.getExtendedProgress(this.progress);
-			double d0 = (double)((float)this.pistonFacing.getFrontOffsetX() * f);
-			double d1 = (double)((float)this.pistonFacing.getFrontOffsetY() * f);
-			double d2 = (double)((float)this.pistonFacing.getFrontOffsetZ() * f);
-			iblockstate.addCollisionBoxToList(world, pos, p_190609_3_.offset(-d0, -d1, -d2), p_190609_4_, entity, true);
-
-			for (int j = i; j < p_190609_4_.size(); ++j)
-			{
-				p_190609_4_.set(j, ((AxisAlignedBB)p_190609_4_.get(j)).offset(d0, d1, d2));
-			}
+			double d0 = (double)((float)this.pistonFacing.getXOffset() * f);
+			double d1 = (double)((float)this.pistonFacing.getYOffset() * f);
+			double d2 = (double)((float)this.pistonFacing.getZOffset() * f);
+			return ShapeUtils.or(shape, iblockstate.getCollisionShape(world, pos).withOffset(d0, d1, d2));
 		}
 	}
 
+	@Override
+	public IBlockState func_200230_i() {
+		return pistonState;
+	}
 }

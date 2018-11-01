@@ -25,8 +25,7 @@ public class BlockMagnetPistonStructureHelper extends BlockPistonStructureHelper
 	private final List<BlockPos> toDestroy = Lists.<BlockPos>newArrayList();
 	private final int strength;
 
-	public BlockMagnetPistonStructureHelper(World world, BlockPos pos, EnumFacing pistonFacing, boolean extending, int strength)
-	{
+	public BlockMagnetPistonStructureHelper(World world, BlockPos pos, EnumFacing pistonFacing, boolean extending, int strength) {
 		super(world, pos, pistonFacing, extending);
 		this.world = world;
 		this.pistonPos = pos;
@@ -54,7 +53,7 @@ public class BlockMagnetPistonStructureHelper extends BlockPistonStructureHelper
 
 		if (!BlockMagnetPistonBase.canPush(state, this.world, this.blockToMove, this.moveDirection, false, this.moveDirection))
 		{
-			if (state.getMobilityFlag() == EnumPushReaction.DESTROY)
+			if (state.getPushReaction() == EnumPushReaction.DESTROY)
 			{
 				this.toDestroy.add(this.blockToMove);
 				return true;
@@ -85,9 +84,8 @@ public class BlockMagnetPistonStructureHelper extends BlockPistonStructureHelper
 	private boolean addBlockLine(BlockPos origin, EnumFacing direction)
 	{
 		IBlockState state = this.world.getBlockState(origin);
-		Block block = state.getBlock();
 
-		if (state.getBlock().isAir(state, this.world, origin))
+		if (state.getBlock().isAir(state))
 		{
 			return true;
 		}
@@ -117,17 +115,14 @@ public class BlockMagnetPistonStructureHelper extends BlockPistonStructureHelper
 				{
 					BlockPos blockpos = origin.offset(this.moveDirection.getOpposite(), i);
 					state = this.world.getBlockState(blockpos);
-					block = state.getBlock();
 
-					if (state.getBlock().isAir(state, this.world, blockpos) || !BlockMagnetPistonBase.canPush(state, this.world, blockpos, this.moveDirection, false, this.moveDirection.getOpposite()) || blockpos.equals(this.pistonPos))
-					{
+					if (state.getBlock().isAir(state) || !BlockMagnetPistonBase.canPush(state, this.world, blockpos, this.moveDirection, false, this.moveDirection.getOpposite()) || blockpos.equals(this.pistonPos)) {
 						break;
 					}
 
 					++i;
 
-					if (i + this.toMove.size() > this.strength && this.extending)
-					{
+					if (i + this.toMove.size() > this.strength && this.extending) {
 						return false;
 					}
 				}
@@ -142,21 +137,17 @@ public class BlockMagnetPistonStructureHelper extends BlockPistonStructureHelper
 
 				int j1 = 1;
 
-				while (true)
-				{
+				while (true) {
 					BlockPos blockpos1 = origin.offset(this.moveDirection, j1);
 					int k = this.toMove.indexOf(blockpos1);
-
 					if (k > -1)
 					{
 						this.reorderListAtCollision(i1, k);
 
-						for (int l = 0; l <= k + i1; ++l)
-						{
+						for (int l = 0; l <= k + i1; ++l) {
 							BlockPos blockpos2 = this.toMove.get(l);
 
-							if (this.world.getBlockState(blockpos2).getBlock() == Blocks.SLIME_BLOCK && !this.addBranchingBlocks(blockpos2))
-							{
+							if (this.world.getBlockState(blockpos2).getBlock() == Blocks.SLIME_BLOCK && !this.addBranchingBlocks(blockpos2)) {
 								return false;
 							}
 						}
@@ -166,24 +157,20 @@ public class BlockMagnetPistonStructureHelper extends BlockPistonStructureHelper
 
 					state = this.world.getBlockState(blockpos1);
 
-					if (state.getBlock().isAir(state, this.world, blockpos1))
-					{
+					if (state.getBlock().isAir(state)) {
 						return true;
 					}
 
-					if (!BlockMagnetPistonBase.canPush(state, this.world, blockpos1, this.moveDirection, true, this.moveDirection) || blockpos1.equals(this.pistonPos))
-					{
+					if (!BlockMagnetPistonBase.canPush(state, this.world, blockpos1, this.moveDirection, true, this.moveDirection) || blockpos1.equals(this.pistonPos)) {
 						return false;
 					}
 
-					if (state.getMobilityFlag() == EnumPushReaction.DESTROY)
-					{
+					if (state.getPushReaction() == EnumPushReaction.DESTROY) {
 						this.toDestroy.add(blockpos1);
 						return true;
 					}
 
-					if (this.toMove.size() >= this.strength)
-					{
+					if (this.toMove.size() >= this.strength) {
 						return false;
 					}
 

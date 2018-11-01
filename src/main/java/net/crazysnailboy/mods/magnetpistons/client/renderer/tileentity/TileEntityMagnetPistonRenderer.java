@@ -1,41 +1,34 @@
 package net.crazysnailboy.mods.magnetpistons.client.renderer.tileentity;
 
-import org.lwjgl.opengl.GL11;
 import net.crazysnailboy.mods.magnetpistons.block.BlockMagnetPistonBase;
 import net.crazysnailboy.mods.magnetpistons.block.BlockMagnetPistonExtension;
 import net.crazysnailboy.mods.magnetpistons.init.ModBlocks;
 import net.crazysnailboy.mods.magnetpistons.tileentity.TileEntityMagnetPiston;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockPistonExtension.EnumPistonType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.state.properties.PistonType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
+import java.util.Random;
 
-@SideOnly(Side.CLIENT)
-public class TileEntityMagnetPistonRenderer extends TileEntitySpecialRenderer<TileEntityMagnetPiston>
+public class TileEntityMagnetPistonRenderer extends TileEntityRenderer<TileEntityMagnetPiston>
 {
 
 	private BlockRendererDispatcher blockRenderer;
 
 	@Override
-	public void render(TileEntityMagnetPiston tileentity, double x, double y, double z, float partialTicks, int destroyStage, float alpha)
-	{
+	public void render(TileEntityMagnetPiston tileentity, double x, double y, double z, float partialTicks, int destroyStage) {
 		if (blockRenderer == null) blockRenderer = Minecraft.getMinecraft().getBlockRendererDispatcher(); //Forge: Delay this from constructor to allow us to change it later
 		BlockPos pos = tileentity.getPos();
-		IBlockState state = tileentity.getPistonState();
+		IBlockState state = tileentity.func_200230_i();
 		Block block = state.getBlock();
 
 		if (state.getMaterial() != Material.AIR && tileentity.getProgress(partialTicks) < 1.0F)
@@ -68,11 +61,11 @@ public class TileEntityMagnetPistonRenderer extends TileEntitySpecialRenderer<Ti
 			}
 			else if (tileentity.shouldPistonHeadBeRendered() && !tileentity.isExtending())
 			{
-				EnumPistonType pistonType = EnumPistonType.DEFAULT;
+				PistonType pistonType = PistonType.DEFAULT;
 				IBlockState iblockstate1 = ModBlocks.MAGNET_PISTON_HEAD.getDefaultState()
 					.withProperty(BlockMagnetPistonExtension.TYPE, pistonType)
 					.withProperty(BlockMagnetPistonExtension.FACING, state.getValue(BlockMagnetPistonBase.FACING))
-					.withProperty(BlockMagnetPistonExtension.SHORT, Boolean.valueOf(tileentity.getProgress(partialTicks) >= 0.5F));
+					.withProperty(BlockMagnetPistonExtension.SHORT, tileentity.getProgress(partialTicks) >= 0.5F);
 
 				this.renderStateModel(pos, iblockstate1, bufferbuilder, world, true);
 				bufferbuilder.setTranslation(x - (double)pos.getX(), y - (double)pos.getY(), z - (double)pos.getZ());
@@ -92,7 +85,7 @@ public class TileEntityMagnetPistonRenderer extends TileEntitySpecialRenderer<Ti
 
 	private boolean renderStateModel(BlockPos pos, IBlockState state, BufferBuilder buffer, World world, boolean checkSides)
 	{
-		return this.blockRenderer.getBlockModelRenderer().renderModel(world, this.blockRenderer.getModelForState(state), state, pos, buffer, checkSides);
+		return this.blockRenderer.getBlockModelRenderer().func_199324_a(world, this.blockRenderer.getModelForState(state), state, pos, buffer, checkSides, new Random(), state.getPositionRandom(pos));
 	}
 
 }

@@ -52,7 +52,7 @@ public class BlockPistonStructureHelper extends net.minecraft.block.state.BlockP
 
 		if (!BlockPistonBase.canPush(iblockstate, this.world, this.blockToMove, this.moveDirection, false, this.moveDirection))
 		{
-			if (iblockstate.getMobilityFlag() == EnumPushReaction.DESTROY)
+			if (iblockstate.getPushReaction() == EnumPushReaction.DESTROY)
 			{
 				this.toDestroy.add(this.blockToMove);
 				return true;
@@ -85,7 +85,7 @@ public class BlockPistonStructureHelper extends net.minecraft.block.state.BlockP
 		IBlockState iblockstate = this.world.getBlockState(origin);
 		Block block = iblockstate.getBlock();
 
-		if (iblockstate.getBlock().isAir(iblockstate, this.world, origin))
+		if (iblockstate.getBlock().isAir(iblockstate))
 		{
 			return true;
 		}
@@ -117,7 +117,7 @@ public class BlockPistonStructureHelper extends net.minecraft.block.state.BlockP
 					iblockstate = this.world.getBlockState(blockpos);
 					block = iblockstate.getBlock();
 
-					if (iblockstate.getBlock().isAir(iblockstate, this.world, blockpos) || !BlockPistonBase.canPush(iblockstate, this.world, blockpos, this.moveDirection, false, this.moveDirection.getOpposite()) || blockpos.equals(this.pistonPos))
+					if (iblockstate.getBlock().isAir(iblockstate) || !BlockPistonBase.canPush(iblockstate, this.world, blockpos, this.moveDirection, false, this.moveDirection.getOpposite()) || blockpos.equals(this.pistonPos))
 					{
 						break;
 					}
@@ -163,7 +163,7 @@ public class BlockPistonStructureHelper extends net.minecraft.block.state.BlockP
 
 					iblockstate = this.world.getBlockState(blockpos1);
 
-					if (iblockstate.getBlock().isAir(iblockstate, this.world, blockpos1))
+					if (iblockstate.getBlock().isAir(iblockstate))
 					{
 						return true;
 					}
@@ -173,7 +173,7 @@ public class BlockPistonStructureHelper extends net.minecraft.block.state.BlockP
 						return false;
 					}
 
-					if (iblockstate.getMobilityFlag() == EnumPushReaction.DESTROY)
+					if (iblockstate.getPushReaction() == EnumPushReaction.DESTROY)
 					{
 						this.toDestroy.add(blockpos1);
 						return true;
