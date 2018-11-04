@@ -1,0 +1,16 @@
+{
+    "variants": {
+        "extended=false,facing=down,strength=9": { "model": "magnetpistons:block/piston_magnet9", "x": 90 },
+        "extended=false,facing=up,strength=9": { "model": "magnetpistons:block/piston_magnet9", "x": 270 },
+        "extended=false,facing=north,strength=9": { "model": "magnetpistons:block/piston_magnet9" },
+        "extended=false,facing=south,strength=9": { "model": "magnetpistons:block/piston_magnet9", "y": 180 },
+        "extended=false,facing=west,strength=9": { "model": "magnetpistons:block/piston_magnet9", "y": 270 },
+        "extended=false,facing=east,strength=9": { "model": "magnetpistons:block/piston_magnet9", "y": 90 },
+        "extended=true,facing=down,strength=9": { "model": "magnetpistons:block/piston_extended_magnet9", "x": 90 },
+        "extended=true,facing=up,strength=9": { "model": "magnetpistons:block/piston_extended_magnet9", "x": 270 },
+        "extended=true,facing=north,strength=9": { "model": "magnetpistons:block/piston_extended_magnet9" },
+        "extended=true,facing=south,strength=9": { "model": "magnetpistons:block/piston_extended_magnet9", "y": 180 },
+        "extended=true,facing=west,strength=9": { "model": "magnetpistons:block/piston_extended_magnet9", "y": 270 },
+        "extended=true,facing=east,strength=9": { "model": "magnetpistons:block/piston_extended_magnet9", "y": 90 }
+    }
+}

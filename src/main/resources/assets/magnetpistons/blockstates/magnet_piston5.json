@@ -1,0 +1,16 @@
+{
+    "variants": {
+        "extended=false,facing=down,strength=5": { "model": "magnetpistons:block/piston_magnet5", "x": 90 },
+        "extended=false,facing=up,strength=5": { "model": "magnetpistons:block/piston_magnet5", "x": 270 },
+        "extended=false,facing=north,strength=5": { "model": "magnetpistons:block/piston_magnet5" },
+        "extended=false,facing=south,strength=5": { "model": "magnetpistons:block/piston_magnet5", "y": 180 },
+        "extended=false,facing=west,strength=5": { "model": "magnetpistons:block/piston_magnet5", "y": 270 },
+        "extended=false,facing=east,strength=5": { "model": "magnetpistons:block/piston_magnet5", "y": 90 },
+        "extended=true,facing=down,strength=5": { "model": "magnetpistons:block/piston_extended_magnet5", "x": 90 },
+        "extended=true,facing=up,strength=5": { "model": "magnetpistons:block/piston_extended_magnet5", "x": 270 },
+        "extended=true,facing=north,strength=5": { "model": "magnetpistons:block/piston_extended_magnet5" },
+        "extended=true,facing=south,strength=5": { "model": "magnetpistons:block/piston_extended_magnet5", "y": 180 },
+        "extended=true,facing=west,strength=5": { "model": "magnetpistons:block/piston_extended_magnet5", "y": 270 },
+        "extended=true,facing=east,strength=5": { "model": "magnetpistons:block/piston_extended_magnet5", "y": 90 }
+    }
+}

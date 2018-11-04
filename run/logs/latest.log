@@ -1,0 +1,31 @@
+[05:03:46] [main/INFO]: Extra: [--tweakClass, org.dimdev.riftloader.launch.RiftLoaderClientTweaker]
+[05:03:46] [main/INFO]: Running with arguments: [--userProperties, {}, --assetsDir, C:/Users/Waterpicker/.gradle/caches/minecraft/assets, --assetIndex, 1.13, --accessToken{REDACTED}, --version, 1.13, --tweakClass, org.dimdev.riftloader.launch.RiftLoaderClientTweaker]
+[05:03:46] [main/INFO]: Loading tweak class name org.dimdev.riftloader.launch.RiftLoaderClientTweaker
+[05:03:46] [main/INFO]: Using primary tweak class name org.dimdev.riftloader.launch.RiftLoaderClientTweaker
+[05:03:46] [main/INFO]: Calling tweak class org.dimdev.riftloader.launch.RiftLoaderClientTweaker
+[05:03:46] [main/INFO]: Searching mods on classpath
+[05:03:46] [main/INFO]: Loaded mod 'magnetpistons'
+[05:03:46] [main/INFO]: Loaded mod 'rift'
+[05:03:46] [main/INFO]: Searching for mods in mods
+[05:03:46] [main/INFO]: Loaded 2 mods
+[05:03:46] [main/INFO]: Initializing mods
+[05:03:46] [main/INFO]: Loading Rift!
+[05:03:46] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.7.11 Source=file:/C:/Users/Waterpicker/.gradle/caches/modules-2/files-2.1/org.dimdev/mixin/0.7.11-SNAPSHOT/81814a44fbd03bff4dd3efd08b2791a47ba7191b/mixin-0.7.11-SNAPSHOT.jar Service=LaunchWrapper Env=UNKNOWN
+[05:03:46] [main/INFO]: FML platform manager could not load class cpw.mods.fml.relauncher.CoreModManager. Proceeding without FML support.
+[05:03:46] [main/INFO]: Compatibility level set to JAVA_8
+[05:03:46] [main/INFO]: Done initializing mods
+[05:03:46] [main/INFO]: Loading tweak class name org.spongepowered.asm.mixin.EnvironmentStateTweaker
+[05:03:46] [main/INFO]: Calling tweak class org.spongepowered.asm.mixin.EnvironmentStateTweaker
+[05:03:46] [main/WARN]: Reference map 'mixins.rift.refmap.json' for mixins.rift.core.json could not be read. If this is a development environment you can ignore this message
+[05:03:46] [main/WARN]: Reference map 'mixins.rift.refmap.json' for mixins.rift.hooks.json could not be read. If this is a development environment you can ignore this message
+[05:03:46] [main/INFO]: Launching wrapped minecraft {net.minecraft.client.main.Main}
+[05:03:47] [main/INFO]: Setting user: Player791
+[05:03:48] [main/INFO]: LWJGL Version: 3.1.6 build 14
+[05:03:49] [main/INFO]: Reloading ResourceManager: Default, Magnet Pistons
+[05:03:50] [Sound Library Loader/INFO]: Starting up SoundSystem...
+[05:03:50] [Thread-2/INFO]: Initializing No Sound
+[05:03:50] [Thread-2/INFO]: (Silent Mode)
+[05:03:50] [Thread-2/INFO]: OpenAL initialized.
+[05:03:50] [Sound Library Loader/INFO]: Preloading sound minecraft:sounds/ambient/underwater/underwater_ambience.ogg
+[05:03:50] [Sound Library Loader/INFO]: Sound engine started
+[05:03:51] [main/INFO]: Created: 1024x512 textures-atlas

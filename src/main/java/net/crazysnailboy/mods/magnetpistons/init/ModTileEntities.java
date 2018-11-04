@@ -3,7 +3,6 @@ package net.crazysnailboy.mods.magnetpistons.init;
 import net.crazysnailboy.mods.magnetpistons.MagnetPistons;
 import net.crazysnailboy.mods.magnetpistons.client.renderer.tileentity.TileEntityMagnetPistonRenderer;
 import net.crazysnailboy.mods.magnetpistons.tileentity.TileEntityMagnetPiston;
-import net.crazysnailboy.mods.magnetpistons.tileentity.TileEntityPiston;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
@@ -14,13 +13,11 @@ import java.util.Map;
 
 
 public class ModTileEntities implements TileEntityRendererAdder, TileEntityTypeAdder {
-	public static TileEntityType<TileEntityPiston> PISTON;
 	public static TileEntityType<TileEntityMagnetPiston> MAGNET_PISTON;
 
 	@Override
 	public void registerTileEntityTypes() {
-		PISTON = (TileEntityType<TileEntityPiston>) register("piston", TileEntityType.Builder.create(TileEntityPiston::new));
-		MAGNET_PISTON = (TileEntityType<TileEntityMagnetPiston>) register("magnet_piston", TileEntityType.Builder.create(() -> new TileEntityMagnetPiston()));
+		MAGNET_PISTON = (TileEntityType<TileEntityMagnetPiston>) register("magnet_piston", TileEntityType.Builder.create(TileEntityMagnetPiston::new));
 	}
 
 	@Override

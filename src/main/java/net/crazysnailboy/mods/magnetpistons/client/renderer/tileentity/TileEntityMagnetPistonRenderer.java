@@ -1,91 +1,68 @@
 package net.crazysnailboy.mods.magnetpistons.client.renderer.tileentity;
 
-import net.crazysnailboy.mods.magnetpistons.block.BlockMagnetPistonBase;
-import net.crazysnailboy.mods.magnetpistons.block.BlockMagnetPistonExtension;
 import net.crazysnailboy.mods.magnetpistons.init.ModBlocks;
 import net.crazysnailboy.mods.magnetpistons.tileentity.TileEntityMagnetPiston;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.BlockPistonBase;
+import net.minecraft.block.BlockPistonExtension;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.state.properties.PistonType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
 
-public class TileEntityMagnetPistonRenderer extends TileEntityRenderer<TileEntityMagnetPiston>
-{
+public class TileEntityMagnetPistonRenderer extends TileEntityRenderer<TileEntityMagnetPiston> {
+	private final BlockRendererDispatcher blockRenderer = Minecraft.getMinecraft().getBlockRendererDispatcher();
 
-	private BlockRendererDispatcher blockRenderer;
+	public TileEntityMagnetPistonRenderer() {
+	}
 
-	@Override
-	public void render(TileEntityMagnetPiston tileentity, double x, double y, double z, float partialTicks, int destroyStage) {
-		if (blockRenderer == null) blockRenderer = Minecraft.getMinecraft().getBlockRendererDispatcher(); //Forge: Delay this from constructor to allow us to change it later
-		BlockPos pos = tileentity.getPos();
-		IBlockState state = tileentity.func_200230_i();
-		Block block = state.getBlock();
-
-		if (state.getMaterial() != Material.AIR && tileentity.getProgress(partialTicks) < 1.0F)
-		{
-			Tessellator tessellator = Tessellator.getInstance();
-			BufferBuilder bufferbuilder = tessellator.getBuffer();
+	public void render(TileEntityMagnetPiston piston, double p_render_2_, double p_render_4_, double p_render_6_, float p_render_8_, int p_render_9_) {
+		BlockPos pos = piston.getPos().offset(piston.getFacing().getOpposite());
+		IBlockState state = piston.getState();
+		if (!state.isAir() && piston.getProgress(p_render_8_) < 1.0F) {
+			Tessellator tess = Tessellator.getInstance();
+			BufferBuilder buffer = tess.getBuffer();
 			this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 			RenderHelper.disableStandardItemLighting();
 			GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 			GlStateManager.enableBlend();
 			GlStateManager.disableCull();
-
-			if (Minecraft.isAmbientOcclusionEnabled())
-			{
-				GlStateManager.shadeModel(GL11.GL_SMOOTH); // GlStateManager.shadeModel(7425);
-			}
-			else
-			{
-				GlStateManager.shadeModel(GL11.GL_FLAT); // GlStateManager.shadeModel(7424);
+			if (Minecraft.isAmbientOcclusionEnabled()) {
+				GlStateManager.shadeModel(7425);
+			} else {
+				GlStateManager.shadeModel(7424);
 			}
 
-			bufferbuilder.begin(7, DefaultVertexFormats.BLOCK);
-			bufferbuilder.setTranslation(x - (double)pos.getX() + (double)tileentity.getOffsetX(partialTicks), y - (double)pos.getY() + (double)tileentity.getOffsetY(partialTicks), z - (double)pos.getZ() + (double)tileentity.getOffsetZ(partialTicks));
-			World world = this.getWorld();
-
-			if (block == ModBlocks.MAGNET_PISTON_HEAD && tileentity.getProgress(partialTicks) <= 0.25F)
-			{
-				state = state.withProperty(BlockMagnetPistonExtension.SHORT, true);
-				this.renderStateModel(pos, state, bufferbuilder, world, true);
-			}
-			else if (tileentity.shouldPistonHeadBeRendered() && !tileentity.isExtending())
-			{
-				PistonType pistonType = PistonType.DEFAULT;
-				IBlockState iblockstate1 = ModBlocks.MAGNET_PISTON_HEAD.getDefaultState()
-					.withProperty(BlockMagnetPistonExtension.TYPE, pistonType)
-					.withProperty(BlockMagnetPistonExtension.FACING, state.getValue(BlockMagnetPistonBase.FACING))
-					.withProperty(BlockMagnetPistonExtension.SHORT, tileentity.getProgress(partialTicks) >= 0.5F);
-
-				this.renderStateModel(pos, iblockstate1, bufferbuilder, world, true);
-				bufferbuilder.setTranslation(x - (double)pos.getX(), y - (double)pos.getY(), z - (double)pos.getZ());
-				state = state.withProperty(BlockMagnetPistonBase.EXTENDED, Boolean.valueOf(true));
-				this.renderStateModel(pos, state, bufferbuilder, world, true);
-			}
-			else
-			{
-				this.renderStateModel(pos, state, bufferbuilder, world, false);
+			buffer.begin(7, DefaultVertexFormats.BLOCK);
+			buffer.setTranslation(p_render_2_ - (double)pos.getX() + (double)piston.getOffsetX(p_render_8_), p_render_4_ - (double)pos.getY() + (double)piston.getOffsetY(p_render_8_), p_render_6_ - (double)pos.getZ() + (double)piston.getOffsetZ(p_render_8_));
+			World lvt_14_1_ = this.getWorld();
+			if (state.getBlock() == ModBlocks.MAGNET_PISTON_HEAD && piston.getProgress(p_render_8_) <= 4.0F) {
+				state = state.withProperty(BlockPistonExtension.SHORT, true);
+				this.renderStateModel(pos, state, buffer, lvt_14_1_, false);
+			} else if (piston.shouldPistonHeadBeRendered() && !piston.isExtending()) {
+				IBlockState lvt_16_1_ = ModBlocks.MAGNET_PISTON_HEAD.getDefaultState().withProperty(BlockPistonExtension.FACING, state.getValue(BlockPistonBase.FACING));
+				lvt_16_1_ = lvt_16_1_.withProperty(BlockPistonExtension.SHORT, piston.getProgress(p_render_8_) >= 0.5F);
+				this.renderStateModel(pos, lvt_16_1_, buffer, lvt_14_1_, false);
+				BlockPos offset = pos.offset(piston.getFacing());
+				buffer.setTranslation(p_render_2_ - (double)offset.getX(), p_render_4_ - (double)offset.getY(), p_render_6_ - (double)offset.getZ());
+				state = state.withProperty(BlockPistonBase.EXTENDED, true);
+				this.renderStateModel(offset, state, buffer, lvt_14_1_, true);
+			} else {
+				this.renderStateModel(pos, state, buffer, lvt_14_1_, false);
 			}
 
-			bufferbuilder.setTranslation(0.0D, 0.0D, 0.0D);
-			tessellator.draw();
+			buffer.setTranslation(0.0D, 0.0D, 0.0D);
+			tess.draw();
 			RenderHelper.enableStandardItemLighting();
 		}
 	}
 
-	private boolean renderStateModel(BlockPos pos, IBlockState state, BufferBuilder buffer, World world, boolean checkSides)
-	{
-		return this.blockRenderer.getBlockModelRenderer().func_199324_a(world, this.blockRenderer.getModelForState(state), state, pos, buffer, checkSides, new Random(), state.getPositionRandom(pos));
+	private boolean renderStateModel(BlockPos pos, IBlockState state, BufferBuilder buffer, World world, boolean p_renderStateModel_5_) {
+		return this.blockRenderer.getBlockModelRenderer().func_199324_a(world, this.blockRenderer.getModelForState(state), state, pos, buffer, p_renderStateModel_5_, new Random(), state.getPositionRandom(pos));
 	}
-
 }
